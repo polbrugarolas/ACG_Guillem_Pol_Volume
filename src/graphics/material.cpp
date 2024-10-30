@@ -136,7 +136,7 @@ void StandardMaterial::render(Mesh* mesh, glm::mat4 model, Camera* camera)
 
 			// do the draw call
 			mesh->render(GL_TRIANGLES);
-
+            
 			first_pass = false;
 		}
 
