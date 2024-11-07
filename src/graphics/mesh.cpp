@@ -70,23 +70,23 @@ void Mesh::clear()
 {
 	//Free VBOs
 	if (vertices_vbo_id)
-		glDeleteBuffers(1, &vertices_vbo_id);
+		glDeleteBuffersARB(1, &vertices_vbo_id);
 	if (uvs_vbo_id)
-		glDeleteBuffers(1, &uvs_vbo_id);
+		glDeleteBuffersARB(1, &uvs_vbo_id);
 	if (normals_vbo_id)
-		glDeleteBuffers(1, &normals_vbo_id);
+		glDeleteBuffersARB(1, &normals_vbo_id);
 	if (colors_vbo_id)
-		glDeleteBuffers(1, &colors_vbo_id);
+		glDeleteBuffersARB(1, &colors_vbo_id);
 	if (interleaved_vbo_id)
-		glDeleteBuffers(1, &interleaved_vbo_id);
+		glDeleteBuffersARB(1, &interleaved_vbo_id);
 	if (indices_vbo_id)
-		glDeleteBuffers(1, &indices_vbo_id);
+		glDeleteBuffersARB(1, &indices_vbo_id);
 	if (bones_vbo_id)
-		glDeleteBuffers(1, &bones_vbo_id);
+		glDeleteBuffersARB(1, &bones_vbo_id);
 	if (weights_vbo_id)
-		glDeleteBuffers(1, &weights_vbo_id);
+		glDeleteBuffersARB(1, &weights_vbo_id);
 	if (uvs1_vbo_id)
-		glDeleteBuffers(1, &uvs1_vbo_id);
+		glDeleteBuffersARB(1, &uvs1_vbo_id);
 
 	//VBOs ids
 	vertices_vbo_id = uvs_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = weights_vbo_id = bones_vbo_id = uvs1_vbo_id = 0;
@@ -130,7 +130,7 @@ void Mesh::enableBuffers(Shader* sh)
 		offset_uv = sizeof(glm::vec3) + sizeof(glm::vec3);
 	}
 
-	glBindVertexArray(interleaved_vao_id);
+	glEnableVertexAttribArray(vertex_location);
 
 	if (vertices_vbo_id || interleaved_vbo_id)
 	{
@@ -139,8 +139,6 @@ void Mesh::enableBuffers(Shader* sh)
 	}
 	else
 		glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, spacing, interleaved.size() ? &interleaved[0].vertex : &vertices[0]);
-	
-	glEnableVertexAttribArray(vertex_location);
 
 	normal_location = -1;
 	if (normals.size() || spacing)
@@ -243,7 +241,6 @@ void Mesh::enableBuffers(Shader* sh)
 		}
 	}
 
-	glBindVertexArray(0);
 }
 
 void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
@@ -258,7 +255,7 @@ void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
 
 	//bind buffers to attribute locations
 	enableBuffers(shader);
-	
+
 	//draw call
 	if (submesh_id == -1 && materials.size() > 0) // if there's mesh mtl
 	{
@@ -277,8 +274,8 @@ void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
 	}
 	else {
 		drawCall(primitive, submesh_id, 0, num_instances);
-		assert(glGetError() == GL_NO_ERROR);
 	}
+
 	//unbind them
 	disableBuffers(shader);
 }
@@ -325,14 +322,10 @@ void Mesh::drawCall(unsigned int primitive, int submesh_id, int draw_call_id, in
 	}
 	else
 	{
-		glBindVertexArray(interleaved_vao_id);
-
 		if (num_instances > 0)
 			glDrawArraysInstanced(primitive, start, size, num_instances);
 		else
 			glDrawArrays(primitive, start, size);
-
-		glBindVertexArray(0);
 	}
 
 	num_triangles_rendered += static_cast<long>((size / 3) * (num_instances ? num_instances : 1));
@@ -341,7 +334,6 @@ void Mesh::drawCall(unsigned int primitive, int submesh_id, int draw_call_id, in
 
 void Mesh::disableBuffers(Shader* shader)
 {
-	glBindVertexArray(interleaved_vao_id);
 	glDisableVertexAttribArray(vertex_location);
 	if (normal_location != -1) glDisableVertexAttribArray(normal_location);
 	if (uv_location != -1) glDisableVertexAttribArray(uv_location);
@@ -350,7 +342,6 @@ void Mesh::disableBuffers(Shader* shader)
 	if (bones_location != -1) glDisableVertexAttribArray(bones_location);
 	if (weights_location != -1) glDisableVertexAttribArray(weights_location);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);    //if crashes here, COMMENT THIS LINE ****************************
-	glBindVertexArray(0);
 }
 
 GLuint instances_buffer_id = 0;
@@ -365,9 +356,9 @@ void Mesh::renderInstanced(unsigned int primitive, const glm::mat4* instanced_mo
 	assert(shader && "shader must be enabled");
 
 	if (instances_buffer_id == 0)
-		glGenBuffers(1, &instances_buffer_id);
-	glBindBuffer(GL_ARRAY_BUFFER, instances_buffer_id);
-	glBufferData(GL_ARRAY_BUFFER, num_instances * sizeof(glm::mat4), instanced_models, GL_STREAM_DRAW);
+		glGenBuffersARB(1, &instances_buffer_id);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, instances_buffer_id);
+	glBufferDataARB(GL_ARRAY_BUFFER_ARB, num_instances * sizeof(glm::mat4), instanced_models, GL_STREAM_DRAW_ARB);
 
 	int attribLocation = shader->getAttribLocation("u_model");
 	assert(attribLocation != -1 && "shader must have attribute mat4 u_model (not a uniform)");
@@ -405,9 +396,9 @@ void Mesh::renderInstanced(unsigned int primitive, const std::vector<glm::vec3> 
 	assert(shader && "shader must be enabled");
 
 	if (instances_buffer_id == 0)
-		glGenBuffers(1, &instances_buffer_id);
-	glBindBuffer(GL_ARRAY_BUFFER, instances_buffer_id);
-	glBufferData(GL_ARRAY_BUFFER, num_instances * sizeof(glm::vec3), &positions[0], GL_STREAM_DRAW);
+		glGenBuffersARB(1, &instances_buffer_id);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, instances_buffer_id);
+	glBufferDataARB(GL_ARRAY_BUFFER_ARB, num_instances * sizeof(glm::vec3), &positions[0], GL_STREAM_DRAW_ARB);
 
 	int attribLocation = shader->getAttribLocation(uniform_name);
 	assert(attribLocation != -1 && "shader uniform not found");
@@ -520,45 +511,44 @@ void Mesh::uploadToVRAM()
 {
 	assert(vertices.size() || interleaved.size());
 
-	if (glGenBuffers == 0)
+	if (glGenBuffersARB == 0)
 	{
 		std::cout << "Error: your graphics cards dont support VBOs. Sorry." << std::endl;
 		exit(0);
 	}
 
-	glGenVertexArrays(1, &interleaved_vao_id);
 	if (interleaved.size())
 	{
 		// Vertex,Normal,UV
 		if (interleaved_vbo_id == 0)
-			glGenBuffers(1, &interleaved_vbo_id);
-		glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id);
-		glBufferData(GL_ARRAY_BUFFER, interleaved.size() * sizeof(tInterleaved), &interleaved[0], GL_STATIC_DRAW);
+			glGenBuffersARB(1, &interleaved_vbo_id);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, interleaved_vbo_id);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, interleaved.size() * sizeof(tInterleaved), &interleaved[0], GL_STATIC_DRAW_ARB);
 	}
 	else
 	{
 		// Vertices
 		if (vertices_vbo_id == 0)
-			glGenBuffers(1, &vertices_vbo_id);
-		glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_id);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+			glGenBuffersARB(1, &vertices_vbo_id);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertices_vbo_id);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW_ARB);
 
 		// UVs
 		if (uvs.size())
 		{
 			if (uvs_vbo_id == 0)
-				glGenBuffers(1, &uvs_vbo_id);
-			glBindBuffer(GL_ARRAY_BUFFER, uvs_vbo_id);
-			glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+				glGenBuffersARB(1, &uvs_vbo_id);
+			glBindBufferARB(GL_ARRAY_BUFFER_ARB, uvs_vbo_id);
+			glBufferDataARB(GL_ARRAY_BUFFER_ARB, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW_ARB);
 		}
 
 		// Normals
 		if (normals.size())
 		{
 			if (normals_vbo_id == 0)
-				glGenBuffers(1, &normals_vbo_id);
-			glBindBuffer(GL_ARRAY_BUFFER, normals_vbo_id);
-			glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+				glGenBuffersARB(1, &normals_vbo_id);
+			glBindBufferARB(GL_ARRAY_BUFFER_ARB, normals_vbo_id);
+			glBufferDataARB(GL_ARRAY_BUFFER_ARB, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW_ARB);
 		}
 	}
 
@@ -566,46 +556,48 @@ void Mesh::uploadToVRAM()
 	if (uvs1.size())
 	{
 		if (uvs1_vbo_id == 0)
-			glGenBuffers(1, &uvs1_vbo_id);
-		glBindBuffer(GL_ARRAY_BUFFER, uvs1_vbo_id);
-		glBufferData(GL_ARRAY_BUFFER, uvs1.size() * sizeof(glm::vec2), &uvs1[0], GL_STATIC_DRAW);
+			glGenBuffersARB(1, &uvs1_vbo_id);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, uvs1_vbo_id);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, uvs1.size() * sizeof(glm::vec2), &uvs1[0], GL_STATIC_DRAW_ARB);
 	}
 
 	// Colors
 	if (colors.size())
 	{
 		if (colors_vbo_id == 0)
-			glGenBuffers(1, &colors_vbo_id);
-		glBindBuffer(GL_ARRAY_BUFFER, colors_vbo_id);
-		glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec4), &colors[0], GL_STATIC_DRAW);
+			glGenBuffersARB(1, &colors_vbo_id);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, colors_vbo_id);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, colors.size() * sizeof(glm::vec4), &colors[0], GL_STATIC_DRAW_ARB);
 	}
 
 	if (bones.size())
 	{
 		if (bones_vbo_id == 0)
-			glGenBuffers(1, &bones_vbo_id);
-		glBindBuffer(GL_ARRAY_BUFFER, bones_vbo_id);
-		glBufferData(GL_ARRAY_BUFFER, bones.size() * sizeof(glm::uvec4), &bones[0], GL_STATIC_DRAW);
+			glGenBuffersARB(1, &bones_vbo_id);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, bones_vbo_id);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, bones.size() * sizeof(glm::uvec4), &bones[0], GL_STATIC_DRAW_ARB);
 	}
 	if (weights.size())
 	{
 		if (weights_vbo_id == 0)
-			glGenBuffers(1, &weights_vbo_id);
-		glBindBuffer(GL_ARRAY_BUFFER, weights_vbo_id);
-		glBufferData(GL_ARRAY_BUFFER, weights.size() * sizeof(glm::vec4), &weights[0], GL_STATIC_DRAW);
+			glGenBuffersARB(1, &weights_vbo_id);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, weights_vbo_id);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, weights.size() * sizeof(glm::vec4), &weights[0], GL_STATIC_DRAW_ARB);
 	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 	// Indices
 	if (indices.size())
 	{
 		if (indices_vbo_id == 0)
-			glGenBuffers(1, &indices_vbo_id);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(glm::uvec3), &indices[0], GL_STATIC_DRAW);
+			glGenBuffersARB(1, &indices_vbo_id);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_id);
+		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(glm::uvec3), &indices[0], GL_STATIC_DRAW_ARB);
 	}
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
 
 	checkGLErrors();
 
@@ -1270,7 +1262,6 @@ void Mesh::createCube()
 	radius = (float)box.halfsize.length();
 
 	updateBoundingBox();
-	uploadToVRAM();
 }
 
 void Mesh::createWireBox()

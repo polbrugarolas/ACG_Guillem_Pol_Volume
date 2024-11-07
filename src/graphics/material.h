@@ -9,6 +9,7 @@
 #include "texture.h"
 #include "shader.h"
 
+
 class Material {
 public:
 
@@ -56,4 +57,26 @@ public:
 	void setUniforms(Camera* camera, glm::mat4 model);
 	void render(Mesh* mesh, glm::mat4 model, Camera* camera);
 	void renderInMenu();
+};
+
+
+class VolumeMaterial : public Material {
+public:
+
+	float absortion_coef;
+	float step;
+	int renderType;
+	Shader* absorption_shader = NULL;
+	Shader* emission_shader = NULL;
+	float scale;
+	float detail;
+
+	VolumeMaterial(glm::vec4 color = glm::vec4(1.f));
+	~VolumeMaterial();
+
+	void setUniforms(Camera* camera, glm::mat4 model);
+	void render(Mesh* mesh, glm::mat4 model, Camera* camera);
+	void renderInMenu();
+	void renderWithSlider();
+	void renderWithoutSlider();
 };

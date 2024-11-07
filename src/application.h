@@ -15,6 +15,7 @@ public:
 	static Camera* camera;
 	std::vector<SceneNode*> node_list;
 	glm::vec4 ambient_light;
+	//glm::vec4 bg_color;
 	std::vector<Light*> light_list;
 
 	int window_width;
@@ -45,3 +46,5 @@ public:
 	void onMousePosition(double xpos, double ypos);
 	void onScroll(double xOffset, double yOffset);
 };
+
+extern glm::vec4 bg_color;

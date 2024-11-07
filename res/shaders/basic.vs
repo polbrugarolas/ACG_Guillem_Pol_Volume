@@ -1,9 +1,9 @@
-#version 330 core
+#version 450 core
 
 in vec3 a_vertex;
 in vec3 a_normal;
-in vec4 a_color;
 in vec2 a_uv;
+in vec4 a_color;
 
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
@@ -13,8 +13,8 @@ uniform vec3 u_camera_position;
 out vec3 v_position;
 out vec3 v_world_position;
 out vec3 v_normal;
-out vec4 v_color;
 out vec2 v_uv;
+out vec4 v_color;
 
 void main()
 {	

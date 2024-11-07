@@ -323,7 +323,6 @@ void drawGrid()
 	{
 		grid = new Mesh();
 		grid->createGrid(10);
-		grid->uploadToVRAM();
 	}
 
 	glLineWidth(1);

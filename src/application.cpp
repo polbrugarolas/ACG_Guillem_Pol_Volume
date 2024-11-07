@@ -3,6 +3,8 @@
 bool render_wireframe = false;
 Camera* Application::camera = nullptr;
 
+glm::vec4 bg_color = glm::vec4(1.0, 1.0, 1.0, 1.0f);
+
 void Application::init(GLFWwindow* window)
 {
     this->instance = this;
@@ -20,13 +22,18 @@ void Application::init(GLFWwindow* window)
     this->flag_grid = true;
     this->flag_wireframe = false;
 
-    this->ambient_light = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
+    this->ambient_light = glm::vec4(1.0, 0.0, 0.0, 1.0);
+    //this->bg_color = glm::vec4(1.0, 1.0, 1.0, 1.0f);
+    bg_color = glm::vec4(1.0, 1.0, 1.0, 1.0f);
 
     /* ADD NODES TO THE SCENE */
-    SceneNode* example = new SceneNode("Example Node");
-    example->mesh = Mesh::Get("res/meshes/sphere.obj");
-    example->material = new StandardMaterial();
-    this->node_list.push_back(example);
+    //SceneNode* example = new SceneNode();
+    //example->mesh = Mesh::Get("res/meshes/sphere.obj");
+    //example->material = new StandardMaterial();
+    //this->node_list.push_back(example);
+
+    VolumeNode* volume_node = new VolumeNode("Volume");
+    this->node_list.push_back(volume_node);
 }
 
 void Application::update(float dt)
@@ -42,7 +49,8 @@ void Application::update(float dt)
 void Application::render()
 {
     // set the clear color (the background color)
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(bg_color.x, bg_color.y, bg_color.z, bg_color.w);
+    //glClearColor(this->bg_color.x, this->bg_color.y, this->bg_color.z, this->bg_color.w);
 
     // Clear the window and the depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -66,7 +74,8 @@ void Application::renderGUI()
 {
     if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::ColorEdit3("Ambient light", (float*)&this->ambient_light);
+        //ImGui::ColorEdit3("Background color", (float*)&this->bg_color);
+        ImGui::ColorEdit3("Background color", (float*)&bg_color);
 
         if (ImGui::TreeNode("Camera")) {
             this->camera->renderInMenu();
