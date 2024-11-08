@@ -90,7 +90,7 @@ float cnoise( vec3 P, float scale, float detail )
 void main()
 {
 	vec3 rayOrigin = u_camera_position;
-	vec3 rayDir = normalize(v_position - rayOrigin);
+	vec3 rayDir = normalize(v_world_position - rayOrigin);
 	
 	vec3 boxMin = vec3(-1.0, -1.0, -1.0);
 	vec3 boxMax = vec3(1.0, 1.0, 1.0);
@@ -109,26 +109,28 @@ void main()
 	float noiseValue;
 	float n;
 	float optical_thickness = 0.0;
+    float abs_coef = 0.0;
+    vec3 p = v_world_position;
 
 	if (renderType == 0) {
 		// Compute Optical Thickness
 		optical_thickness = (tb - ta) * absorption_coef;
-		radiance = bg_color * exp(-optical_thickness);
 	}
 	else {
 		for (float i = ta; i<tb; i += steps) {
 			count++;
-			vec3 p = v_position + i * rayDir;
+			p += steps * rayDir;
 
 			// Compute Noise
 			n = cnoise(p, scale, detail);
 
 			// Compute Optical Thickness on step
 			optical_thickness += (steps) * n * absorption_coef;
-			radiance += bg_color * exp(-optical_thickness);
+
 		}
-		radiance = radiance / count;
 	}
+    // Compute Radiance
+    radiance = bg_color * exp(-optical_thickness);
 
 	FragColor = radiance;
 }
