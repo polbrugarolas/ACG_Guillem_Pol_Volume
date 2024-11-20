@@ -8,6 +8,8 @@
 #include "mesh.h"
 #include "texture.h"
 #include "shader.h"
+#include "../../libraries/easyVDB/src/openvdbReader.h"
+#include "../../libraries/easyVDB/src/bbox.h"
 
 
 class Material {
@@ -68,8 +70,10 @@ public:
 	int renderType;
 	Shader* absorption_shader = NULL;
 	Shader* emission_shader = NULL;
+	Shader* bunny_shader = NULL;
 	float scale;
 	float detail;
+	std::string file_path;
 
 	VolumeMaterial(glm::vec4 color = glm::vec4(1.f));
 	~VolumeMaterial();
@@ -79,4 +83,6 @@ public:
 	void renderInMenu();
 	void renderWithSlider();
 	void renderWithoutSlider();
+	void loadVDB(std::string file_path);
+	void estimate3DTexture(easyVDB::OpenVDBReader* vdbReader);
 };

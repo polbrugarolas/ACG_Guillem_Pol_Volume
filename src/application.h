@@ -17,7 +17,7 @@ public:
 	glm::vec4 ambient_light;
 	//glm::vec4 bg_color;
 	std::vector<Light*> light_list;
-
+	POINT new_light;
 	int window_width;
 	int window_height;
 

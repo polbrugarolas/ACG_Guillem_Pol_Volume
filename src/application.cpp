@@ -23,8 +23,11 @@ void Application::init(GLFWwindow* window)
     this->flag_wireframe = false;
 
     this->ambient_light = glm::vec4(1.0, 0.0, 0.0, 1.0);
-    //this->bg_color = glm::vec4(1.0, 1.0, 1.0, 1.0f);
     bg_color = glm::vec4(1.0, 1.0, 1.0, 1.0f);
+
+    this->new_light = POINT();
+    //this->light_list.push_back(new_light);
+    //this->node_list.push_back(new_light);
 
     /* ADD NODES TO THE SCENE */
     //SceneNode* example = new SceneNode();
