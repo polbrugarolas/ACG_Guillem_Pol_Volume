@@ -117,28 +117,17 @@ void main()
 
     for (float i = ta; i<tb; i += steps) {
         count++;
-        //p += steps * rayDir;
+        p += steps * rayDir;
 
         // Compute Noise
-        //pt = vec3((p.x + 1) / 2, (p.y + 1) / 2, (p.z + 1) / 2);
-        //n = texture(u_texture, pt).w;
+        pt = vec3((p.x + 1) / 2, (p.y + 1) / 2, (p.z + 1) / 2);
+        n = texture(u_texture, pt).x;
 
         // Compute Optical Thickness on step
-        //optical_thickness += (steps) * n * absorption_coef;
-
-        vec3 p = v_world_position + count * steps * rayDir;
-        // Compute Noise
-        n = texture(u_texture, p).w;
-        // Compute Optical Thickness T(0, tmax)
-        optical_thicknessT0 += (steps) * n * absorption_coef;
-        abs_coef_t += (steps) * n * absorption_coef;
-        optical_thicknessTt = exp(-(tb - ta - steps * count) * absorption_coef);
-
-        radiance += u_color * abs_coef_t * optical_thicknessT0;
-
+        optical_thickness += (steps) * n * absorption_coef;
     }
 
     // Compute Radiance
-    radiance += bg_color * exp(-optical_thickness);
+    radiance = bg_color * exp(-optical_thickness);
 	FragColor = radiance;
 }

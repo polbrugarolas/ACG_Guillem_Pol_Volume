@@ -194,7 +194,7 @@ void VolumeMaterial::setUniforms(Camera* camera, glm::mat4 model)
 	this->shader->setUniform("scale", this->scale);
 	this->shader->setUniform("detail", this->detail);
 	if (this->texture) {
-		this->shader->setUniform("u_texture", this->texture);
+		this->shader->setUniform("u_texture", this->texture,0);
 	}
 }
 
