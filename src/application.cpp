@@ -3,7 +3,6 @@
 bool render_wireframe = false;
 Camera* Application::camera = nullptr;
 
-glm::vec4 bg_color = glm::vec4(1.0, 1.0, 1.0, 1.0f);
 
 void Application::init(GLFWwindow* window)
 {
@@ -23,11 +22,16 @@ void Application::init(GLFWwindow* window)
     this->flag_wireframe = false;
 
     this->ambient_light = glm::vec4(1.0, 0.0, 0.0, 1.0);
-    bg_color = glm::vec4(1.0, 1.0, 1.0, 1.0f);
+    this->bg_color = glm::vec4(1.0, 1.0, 1.0, 1.0f);
 
-    this->new_light = POINT();
-    //this->light_list.push_back(new_light);
-    //this->node_list.push_back(new_light);
+    l_position = glm::vec3(1.5, 1.5, 1.5);
+    eLightType l_type = LIGHT_POINT;
+    l_intensity = 1.0;
+    l_color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+
+    Light* new_light = new Light(l_position, l_type, l_intensity, l_color);
+    this->light_list.push_back(new_light);
+    this->node_list.push_back(new_light);
 
     /* ADD NODES TO THE SCENE */
     //SceneNode* example = new SceneNode();

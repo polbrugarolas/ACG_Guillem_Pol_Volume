@@ -165,8 +165,9 @@ VolumeMaterial::VolumeMaterial(glm::vec4 color)
 {
 	this->absorption_shader = Shader::Get("res/shaders/basic.vs", "res/shaders/volume.fs");
 	this->emission_shader = Shader::Get("res/shaders/basic.vs", "res/shaders/emission_volume.fs");
-	this->bunny_shader = Shader::Get("res/shaders/basic.vs", "res/shaders/3d_volume.fs");
+	this->full_model_shader = Shader::Get("res/shaders/basic.vs", "res/shaders/full_model_volume.fs");
 	this->absortion_coef = 0.5;
+	this->scattering_coef = 0.5;
 	this->step = 0.004;
 	this->renderType = 0;
 	this->shader = absorption_shader;
@@ -175,6 +176,7 @@ VolumeMaterial::VolumeMaterial(glm::vec4 color)
 	this->detail = 5;
 	this->file_path = "res/meshes/bunny_cloud.vdb";
 	loadVDB(file_path);
+	this->g = 0.0;
 }
 
 VolumeMaterial::~VolumeMaterial() { }
@@ -187,15 +189,18 @@ void VolumeMaterial::setUniforms(Camera* camera, glm::mat4 model)
 	this->shader->setUniform("u_model", model);
 
 	this->shader->setUniform("u_color", this->color);
-	this->shader->setUniform("bg_color", bg_color);
+	this->shader->setUniform("bg_color", Application::instance->bg_color);
 	this->shader->setUniform("absorption_coef", this->absortion_coef);
 	this->shader->setUniform("steps", this->step);
 	this->shader->setUniform("renderType", this->renderType);
 	this->shader->setUniform("scale", this->scale);
 	this->shader->setUniform("detail", this->detail);
 	if (this->texture) {
-		this->shader->setUniform("u_texture", this->texture,0);
+		this->shader->setUniform("u_texture", this->texture, 0);
 	}
+
+	this->shader->setUniform("scattering_coef", this->scattering_coef);
+	this->shader->setUniform("g", this->g);
 }
 
 void VolumeMaterial::render(Mesh* mesh, glm::mat4 model, Camera* camera)
@@ -206,6 +211,8 @@ void VolumeMaterial::render(Mesh* mesh, glm::mat4 model, Camera* camera)
 
 		// upload uniforms
 		setUniforms(camera, model);
+		Light* new_light = Application::instance->light_list[0];
+		new_light->setUniforms(this->shader, model);
 
 		// do the draw call
 		mesh->render(GL_TRIANGLES);
@@ -219,7 +226,7 @@ int currentVolumeType = 0;
 
 void VolumeMaterial::renderInMenu()
 {
-	const char* volumeTypes[] = { "Absorption", "Emission-Absorption", "Bunny"};
+	const char* volumeTypes[] = { "Absorption", "Emission-Absorption", "Full Model" };
 	ImGui::Combo("Shader Type", &currentVolumeType, volumeTypes, IM_ARRAYSIZE(volumeTypes));
 	
 	if (currentVolumeType == 0) {
@@ -230,23 +237,28 @@ void VolumeMaterial::renderInMenu()
 		ImGui::ColorEdit3("Color", (float*)&this->color);
 	}
 	else {
-		this->shader = bunny_shader;
+		this->shader = full_model_shader;
 		ImGui::ColorEdit3("Color", (float*)&this->color);
 	}
 
 	ImGui::SliderFloat("Step Length", &this->step, 0.001, 1.0);
-	ImGui::SliderFloat("Absortion Coefficient", &this->absortion_coef, 0.0, 2.0);
+	ImGui::SliderFloat("Absortion Coefficient", &this->absortion_coef, 0.0, 5.0);
+	ImGui::SliderFloat("Scattering Coefficient", &this->scattering_coef, 0.0, 5.0);
+	ImGui::SliderFloat("Isotropy / Anisotropy", &this->g, -0.999, 0.999);
 
-	const char* renderModes[] = { "Homogeneous", "Heterogeneous" };
+	const char* renderModes[] = { "Homogeneous", "Heterogeneous", "Bunny" };
 	ImGui::Combo("Volume Type", &currentRenderMode, renderModes, IM_ARRAYSIZE(renderModes));
 
 	if (currentRenderMode == 0) {
 		this->renderType = 0;
 	}
-	else {
+	else if (currentRenderMode == 1) {
 		this->renderType = 1;
 		ImGui::SliderFloat("Noise Scale", &this->scale, 0.01, 5.0);
 		ImGui::SliderFloat("Noise Detail", &this->detail, 0.01, 6.0);
+	}
+	else {
+		this->renderType = 2;
 	}
 }
 

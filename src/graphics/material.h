@@ -66,14 +66,16 @@ class VolumeMaterial : public Material {
 public:
 
 	float absortion_coef;
+	float scattering_coef;
 	float step;
 	int renderType;
 	Shader* absorption_shader = NULL;
 	Shader* emission_shader = NULL;
-	Shader* bunny_shader = NULL;
+	Shader* full_model_shader = NULL;
 	float scale;
 	float detail;
 	std::string file_path;
+	float g;
 
 	VolumeMaterial(glm::vec4 color = glm::vec4(1.f));
 	~VolumeMaterial();

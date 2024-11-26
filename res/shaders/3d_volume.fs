@@ -90,7 +90,6 @@ float cnoise( vec3 P, float scale, float detail )
 
 void main()
 {
-
 	vec3 rayOrigin = u_camera_position;
 	vec3 rayDir = normalize(v_world_position - rayOrigin);
 	

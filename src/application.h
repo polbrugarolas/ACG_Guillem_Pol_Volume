@@ -17,7 +17,6 @@ public:
 	glm::vec4 ambient_light;
 	//glm::vec4 bg_color;
 	std::vector<Light*> light_list;
-	POINT new_light;
 	int window_width;
 	int window_height;
 
@@ -28,6 +27,10 @@ public:
 	bool dragging;
 	glm::vec2 mousePosition;
 	glm::vec2 lastMousePosition;
+	glm::vec4 bg_color;
+	float l_intensity;
+	glm::vec4 l_color;
+	glm::vec3 l_position;
 
 	void init(GLFWwindow* window);
 	void update(float dt);
@@ -46,5 +49,3 @@ public:
 	void onMousePosition(double xpos, double ypos);
 	void onScroll(double xOffset, double yOffset);
 };
-
-extern glm::vec4 bg_color;
