@@ -16,6 +16,8 @@ uniform float steps;
 uniform mat4 u_model;
 uniform float scale;
 uniform float detail;
+
+// Instance light information
 uniform float u_light_intensity;
 uniform float u_light_shininess;
 uniform vec4 u_light_color;
@@ -98,6 +100,7 @@ float cnoise( vec3 P, float scale, float detail )
 
 void main()
 {
+  // Generate a ray with the direction from the camera to the position
 	vec3 rayOrigin = u_camera_position;
 	vec3 rayDir = normalize(v_position - rayOrigin);
 	
@@ -126,14 +129,14 @@ void main()
   vec4 Lst = vec4(0.0f);
   float scat_coef = 0.0;
 
-  // Initiate Light Ray position
   float phase = 1 / (4 * 3.14159265);
 
+  // Iterate through the ray
   for (float i = ta; i<tb; i += steps) {
     count++;
     p = rayOrigin + i * rayDir;
 
-    // Iteration through light ray
+    // Generate a second ray from the position to the light source position
     vec3 rayLight = normalize(u_local_light_position - p);
     tMin = (boxMin - p) / rayLight;
     tMax = (boxMax - p) / rayLight;
@@ -144,31 +147,33 @@ void main()
     float count2 = 0.0;
     float optical_thickness_l = 0.0;
 
+    // Iterate through this second ray
     for (float j = 0.0; j<tr; j += steps2) {
       count2++;
       pos = p + j * rayLight;
 
-      // Compute Noise
+      // Compute Density
       if (renderType == 0) {
-        // Constant Noise
+        // Constant Density
         n = 1.0;
       }
       else if (renderType == 1) {
-        // Random Noise
+        // Random Density
         n = cnoise(p, scale, detail);
       }
       else {
-        // Bunny Noise
+        // Bunny Density
         pt = vec3((p.x + 1) / 2, (p.y + 1) / 2, (p.z + 1) / 2);
         n = texture(u_texture, pt).x;
       }
 
+      // Compute absorption coefficient and optical thicknes off the light ray
       float abs_coef_l = n * absorption_coef;
       optical_thickness_l += abs_coef_l * steps2;
     }
 
+    // Compute transmittance and in-scattered color
     float Tl = exp(-optical_thickness_l);
-
     Lst = u_light_color * u_light_intensity * u_light_shininess * Tl;
 
     float phase_HG = phase;
@@ -179,39 +184,42 @@ void main()
     float down = pow((1 + g * g - 2 * g * cos(angle)), 3/2);
     phase_HG = upper / down;
 
+    // Add phase function to control directivity of the scattered light
     Lst = Lst * phase_HG;
 
-    // Compute Noise
+    // Compute Density
     if (renderType == 0) {
-      // Constant Noise
+      // Constant Density
       n = 1.0;
 	  }
 	  else if (renderType == 1) {
-			// Random Noise
+			// Random Density
 			n = cnoise(p, scale, detail);
 		}
     else {
-			// Bunny Noise
+			// Bunny Density
 			pt = vec3((p.x + 1) / 2, (p.y + 1) / 2, (p.z + 1) / 2);
       n = texture(u_texture, pt).x;
 		}
 
-    // Compute Optical Thickness T(0, tmax)
+    // Compute absorption, scattering and extinction coefficients
     abs_coef_a = n * absorption_coef;
     scat_coef = n * scattering_coef;
-
     abs_coef_t = abs_coef_a + scat_coef;
 
-    // Compute Optical Thickness T(t, tmax)
+    // Compute Optical Thickness
     optical_thicknessTt += abs_coef_t * steps;
 
-    // Compute radiance
+    // Compute radiance: Emitted Light + Out-Scattering Light
     radiance += exp(-optical_thicknessTt) * (u_color * abs_coef_t + scat_coef * Lst) * steps;
 	}
 
+  // Compute Background color transmittion
   BT = bg_color * exp(-optical_thicknessTt);
 
+  // Add Background color to the final color
   radiance += BT;
 
+  // Return final color
 	FragColor = radiance;
 }
