@@ -183,9 +183,15 @@ VolumeMaterial::~VolumeMaterial() { }
 
 void VolumeMaterial::setUniforms(Camera* camera, glm::mat4 model)
 {
-	//upload node uniforms
+	// compute camera positionin local coordinates
+	glm::mat4 inverseModel = glm::inverse(model);
+	glm::vec4 temp = glm::vec4(camera->eye, 1.0);
+	temp = inverseModel * temp;
+	glm::vec3 local_camera_pos = glm::vec3(temp.x / temp.w, temp.y / temp.w, temp.z / temp.w);
+
+	// upload node uniforms
 	this->shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	this->shader->setUniform("u_camera_position", camera->eye);
+	this->shader->setUniform("u_camera_position", local_camera_pos);
 	this->shader->setUniform("u_model", model);
 
 	this->shader->setUniform("u_color", this->color);
@@ -211,6 +217,13 @@ void VolumeMaterial::render(Mesh* mesh, glm::mat4 model, Camera* camera)
 
 		// upload uniforms
 		setUniforms(camera, model);
+
+		// upload mesh
+		this->volume = mesh;
+		this->shader->setUniform("u_boxMin", this->volume->aabb_min);
+		this->shader->setUniform("u_boxMax", this->volume->aabb_max);
+
+		// upload light
 		Light* new_light = Application::instance->light_list[0];
 		new_light->setUniforms(this->shader, model);
 

@@ -76,6 +76,7 @@ public:
 	float detail;
 	std::string file_path;
 	float g;
+	Mesh* volume;
 
 	VolumeMaterial(glm::vec4 color = glm::vec4(1.f));
 	~VolumeMaterial();

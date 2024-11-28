@@ -16,6 +16,8 @@ uniform float steps;
 uniform mat4 u_model;
 uniform float scale;
 uniform float detail;
+uniform vec3 u_boxMin;
+uniform vec3 u_boxMax;
 
 // Instance light information
 uniform float u_light_intensity;
@@ -93,6 +95,9 @@ float cnoise( vec3 P, float scale, float detail )
     return clamp(fractal_noise(P, detail), 0.0, 1.0);
 }
 
+float rand(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
 
 
 
@@ -104,11 +109,11 @@ void main()
 	vec3 rayOrigin = u_camera_position;
 	vec3 rayDir = normalize(v_position - rayOrigin);
 	
-	vec3 boxMin = vec3(-1.0, -1.0, -1.0);
+  vec3 boxMin = vec3(-1.0, -1.0, -1.0);
 	vec3 boxMax = vec3(1.0, 1.0, 1.0);
 
-	vec3 tMin = (boxMin - rayOrigin) / rayDir;
-	vec3 tMax = (boxMax - rayOrigin) / rayDir;
+	vec3 tMin = (u_boxMin - rayOrigin) / rayDir;
+	vec3 tMax = (u_boxMax - rayOrigin) / rayDir;
 	vec3 t1 = min(tMin, tMax);
 	vec3 t2 = max(tMin, tMax);
 	float ta = max(max(t1.x, t1.y), t1.z);
@@ -130,16 +135,17 @@ void main()
   float scat_coef = 0.0;
 
   float phase = 1 / (4 * 3.14159265);
+  float addition = rand(gl_FragCoord.xy);
 
   // Iterate through the ray
   for (float i = ta; i<tb; i += steps) {
     count++;
-    p = rayOrigin + i * rayDir;
+    p = rayOrigin + i * rayDir + rayDir  * steps * addition;
 
     // Generate a second ray from the position to the light source position
     vec3 rayLight = normalize(u_local_light_position - p);
-    tMin = (boxMin - p) / rayLight;
-    tMax = (boxMax - p) / rayLight;
+    tMin = (u_boxMin - p) / rayLight;
+    tMax = (u_boxMax - p) / rayLight;
     t2 = max(tMin, tMax);
     float tr = min(min(t2.x, t2.y), t2.z);
     vec3 pos = p + rayLight * tr;
